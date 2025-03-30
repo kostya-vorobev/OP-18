@@ -31,6 +31,8 @@ namespace Var18
             InitializeComponent();
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
+            _viewModel.LoadDataFromTemplate(); // Загружаем данные при старте
+            
 
             // Инициализация тестовых данных
             InitializeTestData();
@@ -39,20 +41,13 @@ namespace Var18
             GoodsGrid.AutoGeneratingColumn += GoodsGrid_AutoGeneratingColumn;
             GoodsGrid.RowEditEnding += GoodsGrid_RowEditEnding;
 
-        }
+            // Устанавливаем источник данных
+            GoodsGrid.ItemsSource = _viewModel.GoodsItems;
+        
+
+    }
         private void InitializeTestData()
         {
-            // Пример товара для демонстрации
-            _viewModel.GoodsItems.Add(new GoodsItem
-            {
-                Number = 1,
-                Name = "Пример товара",
-                Code = "001",
-                Unit = "шт",
-                OKEICode = "796",
-                Quantity = 10,
-                Price = 100.50m
-            });
 
             // Устанавливаем значения по умолчанию
             _viewModel.DocumentData.HandedOverPosition = _viewModel.HandedOverPositions[0];
@@ -73,8 +68,7 @@ namespace Var18
 
         private void ExportCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            _viewModel.DocumentData.UpdateTotals(); // Обновляем итоги перед экспортом
-            _viewModel.ExportToExcel();
+
         }
 
         private void GoodsGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
@@ -98,7 +92,136 @@ namespace Var18
 
         private void ExportButton_Click(object sender, RoutedEventArgs e)
         {
+            // Сбрасываем все подсветки
+            ResetAllValidation();
+
+            // Проверяем обязательные поля
+            bool hasErrors = false;
+
+            // Проверка названия организации
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.OrganizationName))
+            {
+                SetErrorStyle(OrganizationName);
+                hasErrors = true;
+            }
+
+            // Проверка названия организации
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.Department))
+            {
+                SetErrorStyle(Department);
+                hasErrors = true;
+            }
+
+            // Проверка названия организации
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.OKPOCode))
+            {
+                SetErrorStyle(OKPOCode);
+                hasErrors = true;
+            }
+
+            // Проверка названия организации
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.OKDPCode))
+            {
+                SetErrorStyle(OKDPCode);
+                hasErrors = true;
+            }
+
+            // Проверка номера документа
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.DocumentNumber))
+            {
+                SetErrorStyle(DocumentNumber);
+                hasErrors = true;
+            }
+
+            // Проверка даты документа
+            if (_viewModel.DocumentData.DocumentDate == default)
+            {
+                SetErrorStyle(DocDate);
+                hasErrors = true;
+            }
+
+            // Проверка товаров
+            if (_viewModel.GoodsItems.Count == 0)
+            {
+                MessageBox.Show("Добавьте хотя бы один товар", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                hasErrors = true;
+            }
+
+            // Проверка подписей
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.HandedOverName))
+            {
+                SetErrorStyle(HandedOverName);
+                hasErrors = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.AcceptedName))
+            {
+                SetErrorStyle(AcceptedName);
+                hasErrors = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.AdminName))
+            {
+                SetErrorStyle(AdminName);
+                hasErrors = true;
+            }
+
+            // Если есть ошибки - не продолжаем
+            if (hasErrors)
+            {
+                MessageBox.Show("Заполните все обязательные поля", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             _viewModel.ExportToExcel();
+        }
+
+        private void SetErrorStyle(Control control)
+        {
+            if (control is TextBox textBox)
+            {
+                textBox.BorderBrush = Brushes.Red;
+                textBox.BorderThickness = new Thickness(0, 0, 0, 2);
+            }
+            else if (control is DatePicker datePicker)
+            {
+                datePicker.BorderBrush = Brushes.Red;
+                datePicker.BorderThickness = new Thickness(0, 0, 0, 2);
+            }
+            else if (control is ComboBox comboBox)
+            {
+                comboBox.BorderBrush = Brushes.Red;
+                comboBox.BorderThickness = new Thickness(0, 0, 0, 2);
+            }
+        }
+
+        private void ResetAllValidation()
+        {
+            // Сбрасываем стили для всех полей
+            var controls = new Control[]
+            {
+        OrganizationName, DocumentNumber, DocDate,
+        HandedOverName, AcceptedName, AdminName
+            };
+
+            foreach (var control in controls)
+            {
+                if (control is TextBox textBox)
+                {
+                    textBox.BorderBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FFBDBDBD");
+                    textBox.ToolTip = null;
+                }
+                else if (control is DatePicker datePicker)
+                {
+                    datePicker.BorderBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FFBDBDBD");
+                    datePicker.ToolTip = null;
+                }
+                else if (control is ComboBox comboBox)
+                {
+                    comboBox.BorderBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FFBDBDBD");
+                    comboBox.ToolTip = null;
+                }
+            }
         }
 
         private void ToggleComboBoxDropDown(object sender, RoutedEventArgs e)
@@ -108,6 +231,11 @@ namespace Var18
             {
                 comboBox.IsDropDownOpen = !comboBox.IsDropDownOpen;
             }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 

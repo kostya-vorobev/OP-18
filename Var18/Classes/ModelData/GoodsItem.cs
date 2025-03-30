@@ -10,15 +10,92 @@ namespace Var18.Classes.ModelData
 {
     public class GoodsItem : INotifyPropertyChanged
     {
+        private int _number;
+        private string _name;
+        private int _code;
+        private string _unit;
+        private int _okeiCode;
+        private decimal _weight;
         private decimal _quantity;
         private decimal _price;
 
-        public int Number { get; set; }
-        public string Name { get; set; }
-        public string Code { get; set; }
-        public string Unit { get; set; }
-        public string OKEICode { get; set; }
-        public string Weight { get; set; }
+        public int Number
+        {
+            get => _number;
+            set
+            {
+                if (_number != value)
+                {
+                    _number = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int Code
+        {
+            get => _code;
+            set
+            {
+                if (_code != value)
+                {
+                    _code = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string Unit
+        {
+            get => _unit;
+            set
+            {
+                if (_unit != value)
+                {
+                    _unit = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int OKEICode
+        {
+            get => _okeiCode;
+            set
+            {
+                if (_okeiCode != value)
+                {
+                    _okeiCode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public decimal Weight
+        {
+            get => _weight;
+            set
+            {
+                if (_weight != value)
+                {
+                    _weight = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public decimal Quantity
         {
@@ -56,5 +133,37 @@ namespace Var18.Classes.ModelData
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        // Метод для создания копии объекта
+        public GoodsItem Clone()
+        {
+            return new GoodsItem
+            {
+                Number = this.Number,
+                Name = this.Name,
+                Code = this.Code,
+                Unit = this.Unit,
+                OKEICode = this.OKEICode,
+                Weight = this.Weight,
+                Quantity = this.Quantity,
+                Price = this.Price
+            };
+        }
+
+        // Валидация данных товара
+        public bool Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return false;
+            }
+
+            if (Quantity <= 0 || Price < 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
-    }
+}

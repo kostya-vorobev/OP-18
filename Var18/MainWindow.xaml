@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:Var18"
         mc:Ignorable="d"
         Title="Унифицированная форма № ОП-18" Height="720" Width="1200"
-        WindowStartupLocation="CenterScreen" MinWidth="1200" MinHeight="720" Loaded="MainWindow_Loaded">
+        WindowStartupLocation="CenterScreen" MinWidth="1200" MinHeight="720" Loaded="MainWindow_Loaded" Padding="0" Grid.IsSharedSizeScope="True" Background="#FFF5F9FF">
 
     <Window.Resources>
         <!-- Цветовая палитра -->
@@ -30,7 +31,9 @@
         <SolidColorBrush x:Key="SecondaryTextBrush" Color="{StaticResource SecondaryTextColor}"/>
         <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}"/>
         <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource WhiteColor}"/>
+        <SolidColorBrush x:Key="DisabledTextBrush" Color="{StaticResource TextColor}"/>
 
+        <!-- Стиль для TextBox с плейсхолдером и валидацией -->
         <!-- Стиль для TextBox с плейсхолдером и валидацией -->
         <Style x:Key="ModernTextBoxStyle" TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
@@ -40,26 +43,45 @@
             <Setter Property="Padding" Value="5,0,0,0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
+
+            <!-- Единый ErrorTemplate -->
+            <Setter Property="Validation.ErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <DockPanel LastChildFill="True">
+                            <Border BorderBrush="Red" BorderThickness="1" DockPanel.Dock="Bottom" Margin="0,-1,0,0" Height="1"/>
+                            <AdornedElementPlaceholder Name="adorner">
+                                <AdornedElementPlaceholder.ToolTip>
+                                    <ToolTip Content="{Binding Path=AdornedElement.(Validation.Errors)[0].ErrorContent, 
+                                        ElementName=adorner}"
+                                     Foreground="Red"/>
+                                </AdornedElementPlaceholder.ToolTip>
+                            </AdornedElementPlaceholder>
+                        </DockPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Grid>
                             <Border x:Name="border" 
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="4"
-                                    SnapsToDevicePixels="True">
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="True">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_ContentHost" 
-                                                  Margin="{TemplateBinding Padding}"
-                                                  VerticalAlignment="Center"/>
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
                                     <TextBlock x:Name="placeholderText"
-                                               Text="{TemplateBinding Tag}"
-                                               Foreground="{StaticResource SecondaryTextBrush}"
-                                               Margin="{TemplateBinding Padding}"
-                                               VerticalAlignment="Center"
-                                               Visibility="Collapsed" Padding="5,0,0,0"/>
+                                       Text="{TemplateBinding Tag}"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       Margin="{TemplateBinding Padding}"
+                                       VerticalAlignment="Center"
+                                       Visibility="Collapsed" Padding="5,0,0,0"/>
                                 </Grid>
                             </Border>
                         </Grid>
@@ -78,11 +100,10 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                                 <Setter TargetName="placeholderText" Property="Visibility" Value="Collapsed"/>
                             </Trigger>
-                            <!-- Триггер для валидации (можно активировать через Validation.HasError) -->
                             <Trigger Property="Validation.HasError" Value="True">
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ErrorBrush}"/>
                                 <Setter TargetName="border" Property="ToolTip" 
-                                        Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
+                                Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -107,6 +128,13 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}"/>
+                    <Setter Property="ToolTip" 
+                    Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <!-- Стиль для календаря -->
@@ -229,8 +257,8 @@
 
 
 
-        <!-- Стиль для DataGrid -->
         <Style x:Key="ModernDataGridStyle" TargetType="{x:Type DataGrid}">
+            <!-- Основные свойства -->
             <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
@@ -238,13 +266,76 @@
             <Setter Property="RowDetailsVisibilityMode" Value="VisibleWhenSelected"/>
             <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
             <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
-            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="SelectionMode" Value="Single"/>
             <Setter Property="SelectionUnit" Value="FullRow"/>
             <Setter Property="AutoGenerateColumns" Value="False"/>
-            <Setter Property="GridLinesVisibility" Value="None"/>
-            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="GridLinesVisibility" Value="All"/>
+            <Setter Property="CanUserAddRows" Value="True"/>
+            <Setter Property="RowHeight" Value="30"/>
+            <Setter Property="AlternationCount" Value="2"/>
+
+            <!-- Исправленный шаблон DataGrid -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGrid}">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}" 
+                        Background="{TemplateBinding Background}" 
+                        Padding="{TemplateBinding Padding}" 
+                        SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="DG_ScrollViewer" Focusable="False">
+                                <ScrollViewer.Template>
+                                    <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <DataGridColumnHeadersPresenter x:Name="PART_ColumnHeadersPresenter" 
+                                                                   Grid.Column="1"
+                                                                   Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Column}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+
+                                            <ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
+                                                          Grid.ColumnSpan="2"
+                                                          Grid.Row="1"
+                                                          CanContentScroll="{TemplateBinding CanContentScroll}"/>
+
+                                            <ScrollBar x:Name="PART_VerticalScrollBar"
+                                             Grid.Column="2"
+                                             Grid.Row="1"
+                                             Orientation="Vertical"
+                                             Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                                             Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                             ViewportSize="{TemplateBinding ViewportHeight}"
+                                             Maximum="{TemplateBinding ScrollableHeight}"/>
+
+                                            <ScrollBar x:Name="PART_HorizontalScrollBar"
+                                             Grid.Row="2"
+                                             Grid.ColumnSpan="2"
+                                             Orientation="Horizontal"
+                                             Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                                             Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                             ViewportSize="{TemplateBinding ViewportWidth}"
+                                             Maximum="{TemplateBinding ScrollableWidth}"/>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </ScrollViewer.Template>
+                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!-- Стиль заголовков столбцов -->
             <Setter Property="ColumnHeaderStyle">
                 <Setter.Value>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
@@ -254,9 +345,12 @@
                         <Setter Property="Padding" Value="10 8"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="Height" Value="35"/>
                     </Style>
                 </Setter.Value>
             </Setter>
+
+            <!-- Стиль ячеек -->
             <Setter Property="CellStyle">
                 <Setter.Value>
                     <Style TargetType="{x:Type DataGridCell}">
@@ -267,9 +361,9 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="{x:Type DataGridCell}">
                                     <Border Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                            SnapsToDevicePixels="True">
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    SnapsToDevicePixels="True">
                                         <ContentPresenter VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
@@ -287,6 +381,8 @@
                     </Style>
                 </Setter.Value>
             </Setter>
+
+            <!-- Стиль строк -->
             <Setter Property="RowStyle">
                 <Setter.Value>
                     <Style TargetType="{x:Type DataGridRow}">
@@ -297,32 +393,50 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="{x:Type DataGridRow}">
                                     <Border x:Name="DGR_Border"
-                                            Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                            SnapsToDevicePixels="True">
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    SnapsToDevicePixels="True">
                                         <SelectiveScrollingGrid>
                                             <SelectiveScrollingGrid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                             </SelectiveScrollingGrid.ColumnDefinitions>
-                                            <Grid Background="{TemplateBinding Background}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <DataGridCellsPresenter Grid.Column="1"
-                                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
-                                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                            </Grid>
-                                            <SelectiveScrollingGrid SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=AreRowDetailsFrozen, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, Mode=OneWay}">
-                                                <DataGridDetailsPresenter Visibility="{TemplateBinding DetailsVisibility}"/>
-                                            </SelectiveScrollingGrid>
+                                            <SelectiveScrollingGrid.RowDefinitions>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </SelectiveScrollingGrid.RowDefinitions>
+                                            <DataGridCellsPresenter Grid.Column="1"
+                                                          ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                            <DataGridDetailsPresenter Grid.Column="1"
+                                                            Grid.Row="1"
+                                                            Visibility="{TemplateBinding DetailsVisibility}"/>
                                         </SelectiveScrollingGrid>
                                     </Border>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{StaticResource LightPrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource LightPrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="AlternationIndex" Value="1">
+                                <Setter Property="Background" Value="{StaticResource LightPrimaryBrush}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+
+            <!-- Стиль для строки добавления новых записей -->
+            <Setter Property="RowHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="{x:Type DataGridRowHeader}">
+                        <Setter Property="Background" Value="Transparent"/>
                     </Style>
                 </Setter.Value>
             </Setter>
@@ -388,7 +502,7 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0 5 0 0"/>
         </Style>
-        
+
         <!-- Стиль для ToolTip -->
         <Style x:Key="ModernToolTipStyle" TargetType="{x:Type ToolTip}">
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
@@ -454,7 +568,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- Стиль для TextBlock плейсхолдера -->
         <Style x:Key="PlaceholderTextStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
@@ -462,7 +576,43 @@
             <Setter Property="Margin" Value="6,0,0,0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-        
+        <!-- Стиль для текстового поля в редактируемом ComboBox -->
+        <Style x:Key="ComboBoxEditableTextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border x:Name="border" 
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                 Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="Transparent"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="Transparent"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!-- Стиль для ComboBox с плейсхолдером -->
         <Style x:Key="ModernComboBoxStyle" TargetType="{x:Type ComboBox}">
             <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
@@ -489,73 +639,101 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Основная область содержимого -->
-                                    <ContentPresenter x:Name="contentPresenter"
-                                      Content="{TemplateBinding SelectionBoxItem}"
-                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                      Margin="{TemplateBinding Padding}"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                    <!-- Для нередактируемого режима -->
+                                    <ContentControl x:Name="ContentSite"
+                                    Content="{TemplateBinding SelectionBoxItem}"
+                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                    ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                    Margin="{TemplateBinding Padding}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    IsTabStop="False"
+                                    Visibility="Collapsed"/>
+
+                                    <!-- Для редактируемого режима -->
+                                    <TextBox x:Name="PART_EditableTextBox"
+                                     Margin="{TemplateBinding Padding}"
+                                     Style="{StaticResource ComboBoxEditableTextBoxStyle}"
+                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                     IsReadOnly="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}"
+                                     Background="Transparent"
+                                     Visibility="Collapsed"/>
 
                                     <!-- Плейсхолдер -->
                                     <TextBlock x:Name="placeholderText"
-                                   Text="{TemplateBinding Tag}"
-                                   Style="{StaticResource PlaceholderTextStyle}"
-                                   Visibility="Collapsed"/>
+                                       Text="{TemplateBinding Tag}"
+                                       Style="{StaticResource PlaceholderTextStyle}"
+                                       Visibility="Collapsed"
+                                       Margin="{TemplateBinding Padding}"
+                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
 
                                     <!-- Кнопка со стрелкой -->
                                     <ToggleButton x:Name="toggleButton"
-                                      Grid.Column="1"
-                                      Style="{StaticResource ComboBoxToggleButtonStyle}"
-                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                      ClickMode="Press"/>
-
+                                          Grid.Column="1"
+                                          Style="{StaticResource ComboBoxToggleButtonStyle}"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press"/>
                                 </Grid>
                             </Border>
 
                             <!-- Выпадающий список -->
                             <Popup x:Name="PART_Popup"
-                       Placement="Bottom"
-                       AllowsTransparency="True"
-                       Focusable="False"
-                       IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
-                       PopupAnimation="Slide">
+                           Placement="Bottom"
+                           AllowsTransparency="True"
+                           Focusable="False"
+                           IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                           PopupAnimation="Slide">
                                 <Border x:Name="dropDownBorder"
-                            Background="{StaticResource WhiteBrush}"
-                            BorderBrush="{StaticResource DividerBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
+                                Background="{StaticResource WhiteBrush}"
+                                BorderBrush="{StaticResource DividerBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4">
                                     <ScrollViewer>
                                         <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                        KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                                KeyboardNavigation.DirectionalNavigation="Contained"/>
                                     </ScrollViewer>
                                 </Border>
                             </Popup>
                         </Grid>
                         <ControlTemplate.Triggers>
-                            <!-- Только бордер должен подсвечиваться -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                             </Trigger>
-                            <Trigger Property="IsEditable" Value="True">
-                                <Setter Property="IsTabStop" Value="False"/>
-                                <Setter TargetName="contentPresenter" Property="Visibility" Value="Hidden"/>
-                            </Trigger>
                             <Trigger Property="Validation.HasError" Value="True">
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ErrorBrush}"/>
                             </Trigger>
-                            <!-- Триггер для плейсхолдера -->
-                            <DataTrigger Binding="{Binding SelectedItem, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+
+                            <!-- Триггеры для видимости элементов в зависимости от IsEditable -->
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="IsEditable" Value="False">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+
+                            <!-- Триггеры для плейсхолдера -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEditable" Value="True"/>
+                                    <Condition Property="Text" Value=""/>
+                                </MultiTrigger.Conditions>
                                 <Setter TargetName="placeholderText" Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="">
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEditable" Value="False"/>
+                                    <Condition Property="SelectedItem" Value="{x:Null}"/>
+                                </MultiTrigger.Conditions>
                                 <Setter TargetName="placeholderText" Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Collapsed"/>
+                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -564,297 +742,273 @@
 
 
 
-        <!-- Стиль для элементов ComboBox -->
-        <Style x:Key="ComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}">
-            <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="Padding" Value="8 6"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                        <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderThickness="0"
-                            SnapsToDevicePixels="True">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource LightPrimaryBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="{StaticResource DividerBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+
+
         <RoutedUICommand x:Key="ExportCommand" Text="Экспорт"/>
     </Window.Resources>
     <Window.CommandBindings>
         <CommandBinding Command="{StaticResource ExportCommand}" Executed="ExportCommand_Executed"/>
     </Window.CommandBindings>
-    <ScrollViewer Background="#FFF5F9FF">
-        <Grid Margin="10" Background="#FFF5F9FF">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto" MinHeight="20"/>
-                <RowDefinition Height="80"/>
-            </Grid.RowDefinitions>
+    <Grid  Background="#FFF5F9FF" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="Auto" MinHeight="80"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
 
-            <!-- Шапка документа -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0">
-                <TextBlock Style="{StaticResource HeaderTextStyle}" Text="Унифицированная форма № ОП-18" FontWeight="Bold"
+        <!-- Шапка документа -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0">
+            <TextBlock Style="{StaticResource HeaderTextStyle}" Text="Унифицированная форма № ОП-18" FontWeight="Bold"
                            ToolTip="Форма утверждена постановлением Госкомстата России от 25.12.98 № 132" Margin="0" TextAlignment="Center"/>
-            </StackPanel>
+        </StackPanel>
 
-            <!-- Коды организации -->
-            <Grid Grid.Row="1" Margin="0,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
+        <!-- Коды организации -->
+        <Grid Grid.Row="1" Margin="0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                    <TextBlock Style="{StaticResource LabelTextStyle}" Text="Форма по ОКУД:" VerticalAlignment="Center"
+            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                <TextBlock Style="{StaticResource LabelTextStyle}" Text="Форма по ОКУД:" VerticalAlignment="Center"
                                ToolTip="Общероссийский классификатор управленческой документации" Margin="5,0,0,0"
                                />
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="0330518" Width="Auto" Margin="0,0,0,0" Height="34"
+                <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="0330518" Width="Auto" Margin="0,0,0,0" Height="34"
                              Tag="Код ОКУД" ToolTip="Код формы по ОКУД (0330518 для формы ОП-18)" IsReadOnly="True"/>
-                </StackPanel>
+            </StackPanel>
 
-                <StackPanel Grid.Column="1" Margin="0,0,20,0">
-                    <TextBlock Style="{StaticResource LabelTextStyle}" Text="по ОКПО:" VerticalAlignment="Center"
+            <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                <TextBlock Style="{StaticResource LabelTextStyle}" Text="по ОКПО:" VerticalAlignment="Center"
                                ToolTip="Общероссийский классификатор предприятий и организаций" Margin="5,0,0,0"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Width="Auto" Margin="0,0,0,0"
+                <TextBox Style="{StaticResource ModernTextBoxStyle}" Width="Auto" Margin="0,0,0,0"
                              Tag="Код ОКПО" ToolTip="Введите код организации по ОКПО" Height="35"
-                             Text="{Binding DocumentData.OKPOCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="OKPOCode"/>
-                </StackPanel>
+                             Text="{Binding DocumentData.OKPOCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Name="OKPOCode"/>
+            </StackPanel>
 
-                <StackPanel Grid.Column="2" >
-                    <TextBlock  Style="{StaticResource LabelTextStyle}" Text="Вид деятельности по ОКДП:" VerticalAlignment="Center"
+            <StackPanel Grid.Column="2" >
+                <TextBlock  Style="{StaticResource LabelTextStyle}" Text="Вид деятельности по ОКДП:" VerticalAlignment="Center"
                                ToolTip="Общероссийский классификатор видов деятельности" Margin="5,0,0,0"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Width="Auto" Margin="0,0,0,0"
+                <TextBox Style="{StaticResource ModernTextBoxStyle}" Width="Auto" Margin="0,0,0,0"
                              Tag="Код ОКДП" ToolTip="Введите код вида деятельности по ОКДП" Height="35"
                              Text="{Binding DocumentData.OKDPCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              Name="OKDPCode"/>
-                </StackPanel>
-                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Column="3" Margin="0,0,0,0">
-                    <Button Style="{StaticResource ModernButtonStyle}" Command="{StaticResource ExportCommand}" Content="Экспорт" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="115" ToolTip="Выполниить экспорт в Exсel документ" Height="36" Margin="0,0,5,0"/>
-                </StackPanel>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Column="3" Margin="0,0,0,0"/>
 
-            </Grid>
+        </Grid>
 
-            <!-- Данные организации -->
-            <Grid Grid.Row="2" Margin="0,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
+        <!-- Данные организации -->
+        <Grid Grid.Row="2" Margin="0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
 
-                <StackPanel>
-                    <TextBlock Style="{StaticResource LabelTextStyle}" Margin="5,0,0,-1"
+            <StackPanel>
+                <TextBlock Style="{StaticResource LabelTextStyle}" Margin="5,0,0,-1"
                                ToolTip="Полное наименование организации" Text="Организация"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Name="OrganizationName" Margin="0,0,0,10" Height="35"
-                             Tag="Название организации" ToolTip="Введите полное наименование организации"
-                             Text="{Binding DocumentData.OrganizationName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Style="{StaticResource LabelTextStyle}" Margin="5,0,0,0"
+                <TextBox Style="{StaticResource ModernTextBoxStyle}" 
+         Name="OrganizationName" 
+         Margin="0,0,0,10" 
+         Height="35"
+         Tag="Название организации" 
+         ToolTip="Введите полное наименование организации"
+         Text="{Binding DocumentData.OrganizationName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}"/>
+                <TextBlock Style="{StaticResource LabelTextStyle}" Margin="5,0,0,0"
                                ToolTip="Название структурного подразделения (если применимо)" Text="Структурное подразделение" />
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Name="Department" Height="35"
+                <TextBox Style="{StaticResource ModernTextBoxStyle}" Name="Department" Height="35"
                              Tag="Подразделение" ToolTip="Введите название структурного подразделения"
                              Text="{Binding DocumentData.Department, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
+            </StackPanel>
 
-                <StackPanel Grid.Column="1" Margin="20,0,0,0">
-                    <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
-                        <TextBlock Style="{StaticResource LabelTextStyle}" Text="Номер документа:" VerticalAlignment="Center" Width="105"
-                                    ToolTip="Уникальный номер документа в системе учета"/>
-                        <TextBox Style="{StaticResource ModernTextBoxStyle}" Name="DocumentNumber" Margin="5,0,0,0" 
+            <StackPanel Grid.Column="1" Margin="20,0,0,0">
+
+                <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
+                    <TextBlock Style="{StaticResource LabelTextStyle}" Text="Номер документа:" VerticalAlignment="Center" Width="105"
+                                    ToolTip="Уникальный номер документа в системе учета" Margin="0"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,0">
+                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Name="DocumentNumber" Margin="0" 
                                  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Height="35"
-                                 Tag="Номер документа" ToolTip="Введите номер документа согласно внутренней нумерации" Width="155"
+                                 Tag="Номер документа" ToolTip="Введите номер документа согласно внутренней нумерации"
                                  Text="{Binding DocumentData.DocumentNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,25,0,0">
-                        <TextBlock Style="{StaticResource LabelTextStyle}" Text="Дата составления:" VerticalAlignment="Center" Width="105"
-                                   ToolTip="Дата подписания акта"/>
-                        <DatePicker Style="{StaticResource ModernDatePickerStyle}" Name="DocDate" Width="155" Margin="5,0,0,0" 
-                                    AutomationProperties.IsOffscreenBehavior="Onscreen" Height="35" Padding="0"
-                                    Tag="Выберите дату" ToolTip="Выберите дату составления документа"
-                                    Text="{Binding DocumentData.DocDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
                 </StackPanel>
-            </Grid>
 
-            <!-- Заголовок акта -->
-            <TextBlock Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Center" Grid.Row="3" Text="АКТ О ПЕРЕДАЧЕ ТОВАРОВ И ТАРЫ ПРИ СМЕНЕ МАТЕРИАЛЬНО ОТВЕТСТВЕННОГО ЛИЦА" 
+                <StackPanel Orientation="Horizontal" Margin="5,5,0,0">
+                    <TextBlock Style="{StaticResource LabelTextStyle}" Text="Дата составления:" VerticalAlignment="Center"
+                                   ToolTip="Дата подписания акта"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,0">
+                    <DatePicker Style="{StaticResource ModernDatePickerStyle}"
+            Name="DocDate"
+            SelectedDate="{Binding DocumentData.DocumentDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            DisplayDate="{Binding DocumentData.DocumentDate}"
+            Text="{Binding DocumentData.DocumentDate, StringFormat='dd.MM.yyyy', Mode=OneWay}">
+                        <DatePicker.Resources>
+                            <sys:DateTime x:Key="CurrentDate">2025-03-31</sys:DateTime>
+                        </DatePicker.Resources>
+                    </DatePicker>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Заголовок акта -->
+        <TextBlock Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Center" Grid.Row="3" Text="АКТ О ПЕРЕДАЧЕ ТОВАРОВ И ТАРЫ ПРИ СМЕНЕ МАТЕРИАЛЬНО ОТВЕТСТВЕННОГО ЛИЦА" 
                        FontWeight="Bold" Margin="0"/>
 
-            <!-- Таблица товаров -->
-            <DataGrid Style="{StaticResource ModernDataGridStyle}" Grid.Row="5" Name="GoodsGrid" AutoGenerateColumns="False" CanUserAddRows="True"
+        <!-- Таблица товаров -->
+        <DataGrid Style="{StaticResource ModernDataGridStyle}" Grid.Row="5" Name="GoodsGrid" AutoGenerateColumns="False" CanUserAddRows="False"
          HeadersVisibility="Column" Margin="0,10,5,10" ColumnWidth="*">
-                <DataGrid.Columns>
-                    <!-- Исправленные колонки с поддержкой ToolTip -->
-                    <DataGridTextColumn Width="auto" Binding="{Binding Number}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="№ п/п" ToolTip="Порядковый номер записи"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="auto" Binding="{Binding Name}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Наименование товара/тары" ToolTip="Полное наименование товара или тары"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+            <DataGrid.Columns>
+                <!-- Исправленные колонки с поддержкой ToolTip -->
+                <DataGridTextColumn Width="auto" Binding="{Binding Number}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="№ п/п" ToolTip="Порядковый номер записи"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="auto" Binding="{Binding Code}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Код" ToolTip="Код товара по внутреннему классификатору"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                <DataGridTextColumn Width="auto" Binding="{Binding Name}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Наименование товара/тары" ToolTip="Полное наименование товара или тары"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="auto" Binding="{Binding Unit}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Ед. измерения" ToolTip="Единица измерения товара (кг, шт, л и т.д.)"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                <DataGridTextColumn Width="auto" Binding="{Binding Code}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Код" ToolTip="Код товара по внутреннему классификатору"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="auto" Binding="{Binding OKEICode}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Код по ОКЕИ" ToolTip="Код единицы измерения по Общероссийскому классификатору"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                <DataGridTextColumn Width="auto" Binding="{Binding Unit}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Ед. измерения" ToolTip="Единица измерения товара (кг, шт, л и т.д.)"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="auto" Binding="{Binding Weight}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Масса" ToolTip="Масса товара (если применимо)"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                <DataGridTextColumn Width="auto" Binding="{Binding OKEICode}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Код по ОКЕИ" ToolTip="Код единицы измерения по Общероссийскому классификатору"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="auto" Binding="{Binding Quantity}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Количество" ToolTip="Количество передаваемых единиц товара"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                <DataGridTextColumn Width="auto" Binding="{Binding Weight}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Масса" ToolTip="Масса товара (если применимо)"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="auto" Binding="{Binding Price}">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Цена, руб. коп." ToolTip="Цена за единицу товара в рублях с копейками"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                <DataGridTextColumn Width="auto" Binding="{Binding Quantity}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Количество" ToolTip="Количество передаваемых единиц товара"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-                    <DataGridTextColumn Binding="{Binding Amount}" IsReadOnly="True">
-                        <DataGridTextColumn.Header>
-                            <TextBlock Text="Сумма, руб. коп." ToolTip="Автоматически рассчитываемая сумма (Цена × Количество)"/>
-                        </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                <DataGridTextColumn Width="auto" Binding="{Binding Price}">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Цена, руб. коп." ToolTip="Цена за единицу товара в рублях с копейками"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
 
-            <!-- Итоговые строки -->
-            <Grid Grid.Row="6" Margin="0,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <DataGridTextColumn Binding="{Binding Amount}" IsReadOnly="True">
+                    <DataGridTextColumn.Header>
+                        <TextBlock Text="Сумма, руб. коп." ToolTip="Автоматически рассчитываемая сумма (Цена × Количество)"/>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
 
-                <TextBlock Style="{StaticResource LabelTextStyle}" Grid.Column="0" Text="Итого товары:" VerticalAlignment="Center"
-                           ToolTip="Общая сумма по всем товарам"/>
-                <TextBox Style="{StaticResource ModernTextBoxStyle}" Grid.Column="1" Name="GoodsTotal" Margin="5,0"
-                         Tag="Сумма товаров" ToolTip="Автоматически рассчитываемая сумма всех товаров" Height="35"
-                         Text="{Binding DocumentData.GoodsTotal, Mode=OneWay}"/>
-            </Grid>
+        <!-- Итоговые строки -->
+        <Grid Grid.Row="6" Margin="0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+        </Grid>
 
-            <Grid Grid.Row="7" Margin="0,0,0,9">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <Grid Grid.Row="7" Margin="0,0,0,9">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+        </Grid>
 
-                <TextBlock Style="{StaticResource LabelTextStyle}" Grid.Column="0" Text="Всего по акту:" VerticalAlignment="Center" Margin="0,0,0,2"
-                           ToolTip="Общая сумма по акту (товары + тара)"/>
-                <TextBox Style="{StaticResource ModernTextBoxStyle}" Grid.Column="1" Name="TotalAmount" Margin="5,0"
-                         Tag="Общая сумма"  ToolTip="Итоговая сумма передаваемых ценностей" Height="35"
-                         Text="{Binding DocumentData.TotalAmount, Mode=OneWay}"/>
-            </Grid>
+        <!-- Подписи -->
+        <Grid Grid.Row="8" Margin="0,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- Подписи -->
-            <Grid Grid.Row="8" Margin="0,0,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Сдающий -->
-                <StackPanel Grid.Column="0" Margin="0,0,0,0">
-                    <TextBlock Style="{StaticResource LabelTextStyle}" Text="Сдал:" ToolTip="Материально ответственное лицо, сдающее ценности"/>
-                    <Grid Margin="0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="HandedOverPosition" Width="auto"
+            <!-- Сдающий -->
+            <StackPanel Grid.Column="0" Margin="0,0,0,0">
+                <TextBlock Style="{StaticResource LabelTextStyle}" Text="Сдал:" ToolTip="Материально ответственное лицо, сдающее ценности"/>
+                <Grid Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="HandedOverPosition" Width="auto"
                                   Tag="Должность"  ToolTip="Должность сдающего лица" Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.HandedOverPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   ItemsSource="{Binding HandedOverPositions}" IsEditable="True"/>
-                        <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="2" Name="HandedOverName" Width="auto"
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="2" Name="HandedOverName" Width="auto"
                                   Tag="ФИО" ToolTip="ФИО сдающего лица" Margin="0,0,5,0" Height="35" 
                                   Text="{Binding DocumentData.HandedOverName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   ItemsSource="{Binding HandedOverNames}" IsEditable="True"/>
-                    </Grid>
-                </StackPanel>
+                </Grid>
+            </StackPanel>
 
-                <!-- Принимающий -->
-                <StackPanel Grid.Column="1">
-                    <TextBlock Style="{StaticResource LabelTextStyle}" Text="Принял:" ToolTip="Материально ответственное лицо, принимающее ценности"/>
-                    <Grid Margin="0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="0*"/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="AcceptedPosition" Width="auto"
+            <!-- Принимающий -->
+            <StackPanel Grid.Column="1">
+                <TextBlock Style="{StaticResource LabelTextStyle}" Text="Принял:" ToolTip="Материально ответственное лицо, принимающее ценности"/>
+                <Grid Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="0*"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="AcceptedPosition" Width="auto"
                                   Tag="Должность" ToolTip="Должность принимающего лица" Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.AcceptedPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   ItemsSource="{Binding AcceptedPositions}" IsEditable="True"/>
-                        <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="2" Name="AcceptedName"  Width="auto"
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="2" Name="AcceptedName"  Width="auto"
                                   Tag="ФИО" ToolTip="ФИО принимающего лица"  Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.AcceptedName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   ItemsSource="{Binding AcceptedNames}" IsEditable="True"/>
-                    </Grid>
-                </StackPanel>
+                </Grid>
+            </StackPanel>
 
-                <!-- Представитель администрации -->
-                <StackPanel Grid.Column="2">
-                    <TextBlock Style="{StaticResource LabelTextStyle}" Text="Представитель администрации:" 
+            <!-- Представитель администрации -->
+            <StackPanel Grid.Column="2">
+                <TextBlock Style="{StaticResource LabelTextStyle}" Text="Представитель администрации:" 
                                ToolTip="Представитель администрации, подтверждающий передачу"/>
-                    <Grid Margin="0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="AdminPosition" Width="auto"
+                <Grid Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="AdminPosition" Width="auto"
                                   Tag="Должность" ToolTip="Должность предcn. администр." Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.AdminPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   ItemsSource="{Binding AdminPositions}" IsEditable="True"/>
-                        <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="1" Name="AdminName" Width="auto"
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="1" Name="AdminName" Width="auto"
                                   Tag="ФИО" ToolTip="ФИО предст. администр." HorizontalContentAlignment="Stretch" Height="35" Margin="0,0,5,0"
                                   Text="{Binding DocumentData.AdminName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   ItemsSource="{Binding AdminNames}" IsEditable="True"/>
-                    </Grid>
-                </StackPanel>
-            </Grid>
+                </Grid>
+            </StackPanel>
         </Grid>
-    </ScrollViewer>
+        <Button Style="{StaticResource ModernButtonStyle}" Command="{StaticResource ExportCommand}" Content="Экспорт" HorizontalAlignment="Right" VerticalAlignment="Center" Width="115" ToolTip="Выполниить экспорт в Exсel документ" Height="36" Margin="0,0,5,0" Grid.Row="9" Click="ExportButton_Click"/>
+    </Grid>
 </Window>
