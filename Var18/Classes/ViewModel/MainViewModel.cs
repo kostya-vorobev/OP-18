@@ -7,65 +7,15 @@ using System.Windows;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Win32;
 using Var18.Classes.ModelData;
-using Var18.Classes.Valid;
 using Application = Microsoft.Office.Interop.Excel.Application;
 
 namespace Var18.Classes
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        public string this[string columnName]
-        {
-            get
-            {
-                switch (columnName)
-                {
-                    case nameof(DocumentData.OrganizationName):
-                        if (string.IsNullOrWhiteSpace(DocumentData.OrganizationName))
-                            return "Название организации обязательно";
-                        break;
-
-                    case nameof(DocumentData.DocumentNumber):
-                        if (string.IsNullOrWhiteSpace(DocumentData.DocumentNumber))
-                            return "Номер документа обязателен";
-                        break;
-
-                        // Добавьте проверки для других полей
-                }
-                return null;
-            }
-        }
-
-        public string Error => null;
-
-        private bool ValidateAll()
-        {
-            var properties = new[]
-            {
-        nameof(DocumentData.OrganizationName),
-        nameof(DocumentData.DocumentNumber),
-        // Добавьте другие свойства
-    };
-
-            foreach (var property in properties)
-            {
-                if (this[property] != null)
-                    return false;
-            }
-
-            return true;
-        }
 
         private DocumentData _documentData = new DocumentData();
-        public ValidationHelper OrganizationNameValidation { get; } = new ValidationHelper();
-        public ValidationHelper DocumentNumberValidation { get; } = new ValidationHelper();
-        public ValidationHelper DocumentDateValidation { get; } = new ValidationHelper();
-        public ValidationHelper HandedOverNameValidation { get; } = new ValidationHelper();
-        public ValidationHelper AcceptedNameValidation { get; } = new ValidationHelper();
-        public ValidationHelper AdminNameValidation { get; } = new ValidationHelper();
-        public ValidationHelper GoodsItemsValidation { get; } = new ValidationHelper();
 
-        // Коллекции для ComboBox
         public ObservableCollection<string> HandedOverPositions { get; } = new ObservableCollection<string>
         {
             "Кладовщик",
@@ -108,18 +58,25 @@ namespace Var18.Classes
             "Павлова Татьяна Викторовна"
         };
 
+        public ObservableCollection<string> OrganizationNames { get; } = new ObservableCollection<string>
+        {
+            "ООО \"РОСТИКС\"",
+            "ООО \"Мария - Ра\""
+        };
+
         public MainViewModel()
         {
-            // Инициализация данных
+
             GoodsItems.CollectionChanged += (s, e) => DocumentData.UpdateTotals();
 
-            // Установка значений по умолчанию для подписей
+
             DocumentData.HandedOverPosition = HandedOverPositions[0];
             DocumentData.HandedOverName = HandedOverNames[0];
             DocumentData.AcceptedPosition = AcceptedPositions[1];
             DocumentData.AcceptedName = AcceptedNames[1];
             DocumentData.AdminPosition = AdminPositions[2];
             DocumentData.AdminName = AdminNames[2];
+            DocumentData.OrganizationName = OrganizationNames[1];
         }
 
         public DocumentData DocumentData
@@ -144,95 +101,7 @@ namespace Var18.Classes
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public bool Validate()
-        {
-            bool isValid = true;
-
-            // Валидация названия организации
-            if (string.IsNullOrWhiteSpace(DocumentData.OrganizationName))
-            {
-                OrganizationNameValidation.HasError = true;
-                OrganizationNameValidation.ErrorMessage = "Укажите название организации";
-                isValid = false;
-            }
-            else
-            {
-                OrganizationNameValidation.HasError = false;
-            }
-
-            // Валидация номера документа
-            if (string.IsNullOrWhiteSpace(DocumentData.DocumentNumber))
-            {
-                DocumentNumberValidation.HasError = true;
-                DocumentNumberValidation.ErrorMessage = "Укажите номер документа";
-                isValid = false;
-            }
-            else
-            {
-                DocumentNumberValidation.HasError = false;
-            }
-
-            // Валидация даты документа
-            if (DocumentData.DocumentDate == default)
-            {
-                DocumentDateValidation.HasError = true;
-                DocumentDateValidation.ErrorMessage = "Укажите дату документа";
-                isValid = false;
-            }
-            else
-            {
-                DocumentDateValidation.HasError = false;
-            }
-
-            // Валидация товаров
-            if (GoodsItems.Count == 0)
-            {
-                GoodsItemsValidation.HasError = true;
-                GoodsItemsValidation.ErrorMessage = "Добавьте хотя бы один товар";
-                isValid = false;
-            }
-            else
-            {
-                GoodsItemsValidation.HasError = false;
-            }
-
-            // Валидация подписей
-            if (string.IsNullOrWhiteSpace(DocumentData.HandedOverName))
-            {
-                HandedOverNameValidation.HasError = true;
-                HandedOverNameValidation.ErrorMessage = "Укажите ФИО сдающего";
-                isValid = false;
-            }
-            else
-            {
-                HandedOverNameValidation.HasError = false;
-            }
-
-            if (string.IsNullOrWhiteSpace(DocumentData.AcceptedName))
-            {
-                AcceptedNameValidation.HasError = true;
-                AcceptedNameValidation.ErrorMessage = "Укажите ФИО принимающего";
-                isValid = false;
-            }
-            else
-            {
-                AcceptedNameValidation.HasError = false;
-            }
-
-            if (string.IsNullOrWhiteSpace(DocumentData.AdminName))
-            {
-                AdminNameValidation.HasError = true;
-                AdminNameValidation.ErrorMessage = "Укажите ФИО представителя администрации";
-                isValid = false;
-            }
-            else
-            {
-                AdminNameValidation.HasError = false;
-            }
-
-            return isValid;
-        }
-
+      
         public void LoadDataFromTemplate()
         {
             try
@@ -248,28 +117,28 @@ namespace Var18.Classes
                     workbook = excelApp.Workbooks.Open(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LAW_26677.attach_LAW_26677_18.xlsx"));
                     var worksheet = (Worksheet)workbook.Sheets[1];
 
-                    // Начало табличной части (строка 25 в Excel = индекс 25 в C#)
+
                     int startRow = 24;
-                    // Конец табличной части (примерно строка 52)
+
                     int endRow = 51;
                     GoodsItems.Clear();
 
                     for (int row = startRow; row <= endRow; row++)
                     {
-                        // Проверяем, есть ли номер строки (столбец 1 - "№ п/п")
+
                         var lineNumber = GetIntValue(worksheet.Cells[row, 1]);
 
 
                         var item = new GoodsItem
                         {
                             Number = lineNumber++,
-                            Name = GetStringValue(worksheet.Cells[row, 5]),  // Наименование (столбец D)
-                            Code = GetIntValue(worksheet.Cells[row, 19]), // Код (столбец S)
-                            Unit = GetStringValue(worksheet.Cells[row, 22]), // Ед. измерения (столбец V)
-                            OKEICode = GetIntValue(worksheet.Cells[row, 26]), // Код ОКЕИ (столбец Y)
-                            Weight = GetDecimalValue(worksheet.Cells[row, 30]), // Масса (столбец AD)
-                            Quantity = GetDecimalValue(worksheet.Cells[row, 34]), // Количество (столбец AG)
-                            Price = GetDecimalValue(worksheet.Cells[row, 39]), // Цена (столбец AN)
+                            Name = GetStringValue(worksheet.Cells[row, 5]), 
+                            Code = GetIntValue(worksheet.Cells[row, 19]), 
+                            Unit = GetStringValue(worksheet.Cells[row, 22]), 
+                            OKEICode = GetIntValue(worksheet.Cells[row, 26]), 
+                            Weight = GetDecimalValue(worksheet.Cells[row, 30]), 
+                            Quantity = GetDecimalValue(worksheet.Cells[row, 34]), 
+                            Price = GetDecimalValue(worksheet.Cells[row, 39]), 
                         };
 
                         GoodsItems.Add(item);
@@ -299,7 +168,7 @@ namespace Var18.Classes
                 MessageBox.Show($"Ошибка загрузки данных: {ex.Message}");
             }
         }
-        // Вспомогательные методы для безопасного чтения значений
+
         private string GetStringValue(Range range)
         {
             return range.Value?.ToString() ?? string.Empty;
@@ -317,10 +186,6 @@ namespace Var18.Classes
 
         public void ExportToExcel()
         {
-            if (!ValidateAll())
-            {
-                return; // Не продолжаем, если есть ошибки валидации
-            }
             string debugLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "excel_debug.log");
             File.WriteAllText(debugLogPath, $"Начало экспорта {DateTime.Now}\n");
 
@@ -330,11 +195,11 @@ namespace Var18.Classes
 
             try
             {
-                // Инициализация Excel
+
                 excelApp = new Application { Visible = true, DisplayAlerts = false };
                 File.AppendAllText(debugLogPath, "Excel инициализирован\n");
 
-                // Открытие шаблона
+
                 string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LAW_26677.attach_LAW_26677_18.xlsx");
                 if (!File.Exists(templatePath))
                 {
@@ -348,7 +213,7 @@ namespace Var18.Classes
                 worksheet = (Worksheet)workbook.Sheets[1];
                 File.AppendAllText(debugLogPath, $"Шаблон открыт: {templatePath}\n");
 
-                // 1. Заполнение шапки документа
+
                 worksheet.Range["AA13"].Value = DocumentData.DocumentNumber;
                 worksheet.Range["AI13"].Value = DocumentData.DocumentDate.ToString("dd.MM.yyyy");
                 worksheet.Range["A6"].Value = DocumentData.OrganizationName;
@@ -356,11 +221,10 @@ namespace Var18.Classes
                 worksheet.Range["AO6"].Value = DocumentData.OKPOCode;
                 worksheet.Range["AO9"].Value = DocumentData.OKDPCode;
 
-                // 2. Очистка старых данных товаров
+
                 ClearGoodsRows(worksheet, 24, 51);
 
 
-                // 3. Заполнение подписей
                 worksheet.Range["G52"].Value = DocumentData.HandedOverPosition;
                 worksheet.Range["AB52"].Value = DocumentData.HandedOverName;
                 worksheet.Range["G54"].Value = DocumentData.AcceptedPosition;
@@ -368,7 +232,7 @@ namespace Var18.Classes
                 worksheet.Range["R56"].Value = DocumentData.AdminPosition;
                 worksheet.Range["AL56"].Value = DocumentData.AdminName;
 
-                // 4. Заполнение таблицы товаров и тары
+
                 int currentRow = 24;
                 int numbRow = 1;
                 decimal goodsTotalQuantity = 0;
@@ -383,7 +247,6 @@ namespace Var18.Classes
                 {
                     if (string.IsNullOrEmpty(item.Name)) continue;
 
-                    // Пропускаем строки с нулевыми значениями (кроме заголовков и итогов)
                     if (item.Name != "Товары" && item.Name != "Тара" &&
                         item.Name != "Итого" && item.Name != "Всего по акту" &&
                         item.Quantity == 0 && item.Weight == 0 && item.Price == 0)
@@ -395,7 +258,6 @@ namespace Var18.Classes
                     worksheet.Cells[currentRow, 5].Value = item.Name;
                     if (item.Name == "Тара") isName = item.Name;
 
-                    // Заполняем только не нулевые значения
                     worksheet.Cells[currentRow, 19].Value = item.Code == 0 ? null : (object)item.Code;
                     worksheet.Cells[currentRow, 22].Value = string.IsNullOrEmpty(item.Unit) ? null : item.Unit;
                     worksheet.Cells[currentRow, 26].Value = item.OKEICode == 0 ? null : (object)item.OKEICode;
@@ -403,11 +265,10 @@ namespace Var18.Classes
                     worksheet.Cells[currentRow, 34].Value = item.Quantity == 0 ? null : (object)item.Quantity;
                     worksheet.Cells[currentRow, 39].Value = item.Price == 0 ? null : (object)item.Price;
 
-                    // Для суммы используем тернарный оператор
+
                     decimal sum = item.Price * item.Quantity;
                     worksheet.Cells[currentRow, 44].Value = sum == 0 ? null : (object)sum;
 
-                    // Суммируем значения для итогов
                     if (isName == "Товары")
                     {
                         goodsTotalQuantity += item.Quantity;
@@ -459,7 +320,6 @@ namespace Var18.Classes
                     currentRow++;
                 }
 
-                // Удаление полностью пустых строк
                 for (int row = 51; row >= 24; row--)
                 {
                     Range range = worksheet.Range[worksheet.Cells[row, 1], worksheet.Cells[row, 44]];
@@ -481,7 +341,7 @@ namespace Var18.Classes
                     }
                 }
 
-                // 5. Сохранение файла
+
                 string savePath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                     $"Акт_передачи_№{DocumentData.DocumentNumber}_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
@@ -500,7 +360,7 @@ namespace Var18.Classes
             }
             finally
             {
-                // Корректное закрытие Excel
+
                 try
                 {
                     if (workbook != null)
@@ -529,15 +389,15 @@ namespace Var18.Classes
             {
                 for (int row = startRow; row <= endRow; row++)
                 {
-                    worksheet.Cells[row, 1].Value = "";   // A - № п/п
-                    worksheet.Cells[row, 5].Value = "";    // D - Наименование
-                    worksheet.Cells[row, 19].Value = "";   // S - Код товара
-                    worksheet.Cells[row, 22].Value = "";   // V - Единица измерения
-                    worksheet.Cells[row, 26].Value = "";   // Y - Код ОКЕИ
-                    worksheet.Cells[row, 30].Value = "";   // AG - Масса
-                    worksheet.Cells[row, 34].Value = "";   // AN - Количество
-                    worksheet.Cells[row, 39].Value = "";   // AS - Цена
-                    worksheet.Cells[row, 44].Value = "";   // AR - Сумма
+                    worksheet.Cells[row, 1].Value = "";   
+                    worksheet.Cells[row, 5].Value = "";   
+                    worksheet.Cells[row, 19].Value = "";  
+                    worksheet.Cells[row, 22].Value = "";   
+                    worksheet.Cells[row, 26].Value = "";  
+                    worksheet.Cells[row, 30].Value = "";  
+                    worksheet.Cells[row, 34].Value = "";   
+                    worksheet.Cells[row, 39].Value = "";  
+                    worksheet.Cells[row, 44].Value = "";   
                 }
             }
             catch (Exception ex)
@@ -546,7 +406,6 @@ namespace Var18.Classes
                     $"Ошибка при очистке строк: {ex.Message}\n");
             }
         }
-        // Метод для копирования строки (добавлен для устранения ошибки)
         private void CopyRow(Worksheet worksheet, int sourceRow, int destRow)
         {
             try

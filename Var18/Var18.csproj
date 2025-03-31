@@ -67,7 +67,6 @@
     <Compile Include="Classes\Element\NullToBoolConverter.cs" />
     <Compile Include="Classes\ModelData\DocumentData.cs" />
     <Compile Include="Classes\ModelData\GoodsItem.cs" />
-    <Compile Include="Classes\Valid\ValidationHelper.cs" />
     <Compile Include="Classes\ViewModel\MainViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

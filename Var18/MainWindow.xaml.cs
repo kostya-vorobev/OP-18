@@ -19,50 +19,42 @@ using Var18.Classes;
 
 namespace Var18
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
 
-        private MainViewModel _viewModel;
+        private readonly MainViewModel _viewModel;
         public MainWindow()
         {
             InitializeComponent();
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
-            _viewModel.LoadDataFromTemplate(); // Загружаем данные при старте
+            _viewModel.LoadDataFromTemplate(); 
             
 
-            // Инициализация тестовых данных
             InitializeTestData();
 
-            // Подписка на события
+
             GoodsGrid.AutoGeneratingColumn += GoodsGrid_AutoGeneratingColumn;
             GoodsGrid.RowEditEnding += GoodsGrid_RowEditEnding;
 
-            // Устанавливаем источник данных
+
             GoodsGrid.ItemsSource = _viewModel.GoodsItems;
         
 
     }
         private void InitializeTestData()
         {
-
-            // Устанавливаем значения по умолчанию
             _viewModel.DocumentData.HandedOverPosition = _viewModel.HandedOverPositions[0];
-            _viewModel.DocumentData.HandedOverName = _viewModel.HandedOverNames[0];
 
             _viewModel.DocumentData.AcceptedPosition = _viewModel.AcceptedPositions[1];
-            _viewModel.DocumentData.AcceptedName = _viewModel.AcceptedNames[1];
 
             _viewModel.DocumentData.AdminPosition = _viewModel.AdminPositions[2];
-            _viewModel.DocumentData.AdminName = _viewModel.AdminNames[2];
+
+            _viewModel.DocumentData.OrganizationName = _viewModel.OrganizationNames[1];
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // Обновляем номера строк при загрузке
             UpdateRowNumbers();
         }
 
@@ -73,12 +65,12 @@ namespace Var18
 
         private void GoodsGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
-            // Можно настроить автоматически генерируемые колонки
+
         }
 
         private void GoodsGrid_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
         {
-            // Обновляем номера строк после редактирования
+
             UpdateRowNumbers();
         }
 
@@ -92,62 +84,60 @@ namespace Var18
 
         private void ExportButton_Click(object sender, RoutedEventArgs e)
         {
-            // Сбрасываем все подсветки
+
             ResetAllValidation();
 
-            // Проверяем обязательные поля
+
             bool hasErrors = false;
 
-            // Проверка названия организации
+
             if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.OrganizationName))
             {
                 SetErrorStyle(OrganizationName);
                 hasErrors = true;
             }
 
-            // Проверка названия организации
+
             if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.Department))
             {
                 SetErrorStyle(Department);
                 hasErrors = true;
             }
 
-            // Проверка названия организации
+
             if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.OKPOCode))
             {
                 SetErrorStyle(OKPOCode);
                 hasErrors = true;
             }
 
-            // Проверка названия организации
             if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.OKDPCode))
             {
                 SetErrorStyle(OKDPCode);
                 hasErrors = true;
             }
 
-            // Проверка номера документа
+
             if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.DocumentNumber))
             {
                 SetErrorStyle(DocumentNumber);
                 hasErrors = true;
             }
 
-            // Проверка даты документа
+
             if (_viewModel.DocumentData.DocumentDate == default)
             {
                 SetErrorStyle(DocDate);
                 hasErrors = true;
             }
 
-            // Проверка товаров
+
             if (_viewModel.GoodsItems.Count == 0)
             {
                 MessageBox.Show("Добавьте хотя бы один товар", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 hasErrors = true;
             }
 
-            // Проверка подписей
             if (string.IsNullOrWhiteSpace(_viewModel.DocumentData.HandedOverName))
             {
                 SetErrorStyle(HandedOverName);
@@ -166,7 +156,7 @@ namespace Var18
                 hasErrors = true;
             }
 
-            // Если есть ошибки - не продолжаем
+
             if (hasErrors)
             {
                 MessageBox.Show("Заполните все обязательные поля", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -197,7 +187,6 @@ namespace Var18
 
         private void ResetAllValidation()
         {
-            // Сбрасываем стили для всех полей
             var controls = new Control[]
             {
         OrganizationName, DocumentNumber, DocDate,
@@ -236,6 +225,125 @@ namespace Var18
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void OrganizationName_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void OrganizationName_LostFocus(object sender, RoutedEventArgs e)
+        {
+            UpdateCode(OrganizationName.Text);
+        }
+
+        private void OrganizationName_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateCode(OrganizationName.Text);
+        }
+        private void UpdateCode(string OrgName)
+        {
+            switch (OrgName)
+            {
+                case "ООО \"Мария - Ра\"":
+                    OKPOCode.Text = "10036039";
+                    OKPOCode.IsReadOnly = true;
+                    break;
+                case "ООО \"РОСТИКС\"":
+                    OKPOCode.Text = "46737022";
+                    OKPOCode.IsReadOnly = true;
+                    break;
+                default:
+                    OKPOCode.IsReadOnly = false;
+                    OKDPCode.IsReadOnly = false;
+                    break;
+            }
+        }
+
+        private void HandedOverPosition_Loaded(object sender, RoutedEventArgs e)
+        {
+            var index = _viewModel.HandedOverPositions.IndexOf(HandedOverPosition.Text);
+            if (index != -1)
+                HandedOverName.SelectedIndex = HandedOverPosition.SelectedIndex;
+
+        }
+
+        private void HandedOverName_Loaded(object sender, RoutedEventArgs e)
+        {
+            var index = _viewModel.HandedOverNames.IndexOf(HandedOverName.Text);
+            if (index != -1)
+                HandedOverPosition.SelectedIndex = HandedOverName.SelectedIndex;
+        }
+
+        private void AcceptedPosition_Loaded(object sender, RoutedEventArgs e)
+        {
+            var index = _viewModel.AcceptedPositions.IndexOf(AcceptedPosition.Text);
+            if (index != -1)
+                AcceptedName.SelectedIndex = AcceptedPosition.SelectedIndex;
+        }
+
+        private void AcceptedName_Loaded(object sender, RoutedEventArgs e)
+        {
+            var index = _viewModel.AcceptedNames.IndexOf(AcceptedName.Text);
+            if (index != -1)
+                AcceptedPosition.SelectedIndex = AcceptedName.SelectedIndex;
+        }
+
+        private void AdminPosition_Loaded(object sender, RoutedEventArgs e)
+        {
+            var index = _viewModel.AdminPositions.IndexOf(AdminPosition.Text);
+            if (index != -1)
+                AdminName.SelectedIndex = AdminPosition.SelectedIndex;
+        }
+
+        private void AdminName_Loaded(object sender, RoutedEventArgs e)
+        {
+            var index = _viewModel.AdminNames.IndexOf(AdminName.Text);
+            if (index != -1)
+                AdminPosition.SelectedIndex = AdminName.SelectedIndex;
+            
+        }
+
+        private void AdminPosition_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var index = _viewModel.AdminPositions.IndexOf(AdminPosition.Text);
+            if (index != -1)
+                AdminName.SelectedIndex = AdminPosition.SelectedIndex;
+        }
+
+        private void AdminName_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var index = _viewModel.AdminNames.IndexOf(AdminName.Text);
+            if (index != -1)
+                AdminPosition.SelectedIndex = AdminName.SelectedIndex;
+        }
+
+        private void AcceptedName_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var index = _viewModel.AcceptedNames.IndexOf(AcceptedName.Text);
+            if (index != -1)
+                AcceptedPosition.SelectedIndex = AcceptedName.SelectedIndex;
+        }
+
+        private void AcceptedPosition_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var index = _viewModel.AcceptedPositions.IndexOf(AcceptedPosition.Text);
+            if (index != -1)
+                AcceptedName.SelectedIndex = AcceptedPosition.SelectedIndex;
+        }
+
+        private void HandedOverName_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var index = _viewModel.HandedOverNames.IndexOf(HandedOverName.Text);
+            if (index != -1)
+                HandedOverPosition.SelectedIndex = HandedOverName.SelectedIndex;
+        }
+
+        private void HandedOverPosition_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var index = _viewModel.HandedOverPositions.IndexOf(HandedOverPosition.Text);
+            if (index != -1)
+                HandedOverName.SelectedIndex = HandedOverPosition.SelectedIndex;
         }
     }
 

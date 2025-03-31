@@ -134,7 +134,6 @@ namespace Var18.Classes.ModelData
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        // Метод для создания копии объекта
         public GoodsItem Clone()
         {
             return new GoodsItem
@@ -150,7 +149,6 @@ namespace Var18.Classes.ModelData
             };
         }
 
-        // Валидация данных товара
         public bool Validate()
         {
             if (string.IsNullOrWhiteSpace(Name))
