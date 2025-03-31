@@ -64,6 +64,14 @@ namespace Var18.Classes
             "ООО \"Мария - Ра\""
         };
 
+        public ObservableCollection<UnitInfo> Units { get; } = new ObservableCollection<UnitInfo>
+    {
+        new UnitInfo { Code = "796", Name = "Штука", ShortName = "шт" },
+        new UnitInfo { Code = "166", Name = "Килограмм", ShortName = "кг" },
+        new UnitInfo { Code = "112", Name = "Литр", ShortName = "л" },
+        new UnitInfo { Code = "006", Name = "Метр", ShortName = "м" },
+    };
+
         public MainViewModel()
         {
 
@@ -106,6 +114,7 @@ namespace Var18.Classes
         {
             try
             {
+
                 GoodsItems.Clear();
 
                 Application excelApp = null;
@@ -259,8 +268,8 @@ namespace Var18.Classes
                     if (item.Name == "Тара") isName = item.Name;
 
                     worksheet.Cells[currentRow, 19].Value = item.Code == 0 ? null : (object)item.Code;
-                    worksheet.Cells[currentRow, 22].Value = string.IsNullOrEmpty(item.Unit) ? null : item.Unit;
-                    worksheet.Cells[currentRow, 26].Value = item.OKEICode == 0 ? null : (object)item.OKEICode;
+                    worksheet.Cells[currentRow, 22].Value = string.IsNullOrEmpty(item.UnitName) ? null : item.UnitName;
+                    worksheet.Cells[currentRow, 26].Value = string.IsNullOrEmpty(item.UnitCode) ? null : (object)item.UnitCode;
                     worksheet.Cells[currentRow, 30].Value = item.Weight == 0 ? null : (object)item.Weight;
                     worksheet.Cells[currentRow, 34].Value = item.Quantity == 0 ? null : (object)item.Quantity;
                     worksheet.Cells[currentRow, 39].Value = item.Price == 0 ? null : (object)item.Price;

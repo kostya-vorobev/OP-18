@@ -785,7 +785,7 @@
                                ToolTip="Общероссийский классификатор управленческой документации" Margin="5,0,0,0"
                                />
                 <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="0330518" Width="Auto" Margin="0,0,0,0" Height="34"
-                             Tag="Код ОКУД" ToolTip="Код формы по ОКУД (0330518 для формы ОП-18)" IsReadOnly="True"/>
+                             Tag="Код ОКУД" ToolTip="Код формы по ОКУД (0330518 для формы ОП-18)" IsReadOnly="True" TabIndex="1"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Margin="0,0,20,0">
@@ -794,7 +794,7 @@
                 <TextBox Style="{StaticResource ModernTextBoxStyle}" Width="Auto" Margin="0,0,0,0"
                              Tag="Код ОКПО" ToolTip="Введите код организации по ОКПО" Height="35"
                              Text="{Binding DocumentData.OKPOCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" 
-                         Name="OKPOCode" IsReadOnly="False"/>
+                         Name="OKPOCode" IsReadOnly="False" TabIndex="2"/>
             </StackPanel>
 
             <StackPanel Grid.Column="2" >
@@ -803,7 +803,7 @@
                 <TextBox Style="{StaticResource ModernTextBoxStyle}" Width="Auto" Margin="0,0,0,0"
                              Tag="Код ОКДП" ToolTip="Введите код вида деятельности по ОКДП (00.00.00.000)" Height="35"
                              Text="{Binding DocumentData.OKDPCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Name="OKDPCode" MaxLength="12"/>
+                             Name="OKDPCode" MaxLength="12" TabIndex="3"/>
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Column="3" Margin="0,0,0,0"/>
 
@@ -827,12 +827,12 @@
          ToolTip="Введите полное наименование организации"
                           IsEditable="True"
                                Text="{Binding DocumentData.OrganizationName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding OrganizationNames}" SelectionChanged="OrganizationName_SelectionChanged" LostFocus="OrganizationName_LostFocus" Loaded="OrganizationName_Loaded"/>
+                                  ItemsSource="{Binding OrganizationNames}" SelectionChanged="OrganizationName_SelectionChanged" LostFocus="OrganizationName_LostFocus" Loaded="OrganizationName_Loaded" TabIndex="4"/>
                 <TextBlock Style="{StaticResource LabelTextStyle}" Margin="5,0,0,0"
                                ToolTip="Название структурного подразделения (если применимо)" Text="Структурное подразделение" />
                 <TextBox Style="{StaticResource ModernTextBoxStyle}" Name="Department" Height="35"
                              Tag="Подразделение" ToolTip="Введите название структурного подразделения"
-                             Text="{Binding DocumentData.Department, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding DocumentData.Department, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TabIndex="5"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Margin="20,0,0,0">
@@ -845,7 +845,7 @@
                     <TextBox Style="{StaticResource ModernTextBoxStyle}" Name="DocumentNumber" Margin="0" 
                                  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Height="35"
                                  Tag="Номер документа" ToolTip="Введите номер документа согласно внутренней нумерации"
-                                 Text="{Binding DocumentData.DocumentNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                 Text="{Binding DocumentData.DocumentNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TabIndex="6"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="5,5,0,0">
@@ -858,7 +858,7 @@
             SelectedDate="{Binding DocumentData.DocumentDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             DisplayDate="{Binding DocumentData.DocumentDate}"
             DisplayDateStart="{Binding DocumentData.DocumentDate}"
-            Text="{Binding DocumentData.DocumentDate, StringFormat='dd.MM.yyyy', Mode=OneWay}">
+            Text="{Binding DocumentData.DocumentDate, StringFormat='dd.MM.yyyy', Mode=OneWay}" TabIndex="7">
                         <DatePicker.Resources>
                             <sys:DateTime x:Key="CurrentDate">2025-03-31</sys:DateTime>
                         </DatePicker.Resources>
@@ -873,7 +873,7 @@
 
         <!-- Таблица товаров -->
         <DataGrid Style="{StaticResource ModernDataGridStyle}" Grid.Row="5" Name="GoodsGrid" AutoGenerateColumns="False" CanUserAddRows="False"
-         HeadersVisibility="Column" Margin="0,10,5,10" ColumnWidth="*" IsTabStop="True">
+         HeadersVisibility="Column" Margin="0,10,5,10" ColumnWidth="*" IsTabStop="True" CurrentCellChanged="GoodsGrid_CurrentCellChanged" CellEditEnding="GoodsGrid_CellEditEnding">
 
             <DataGrid.Columns>
                 <!-- Исправленные колонки с поддержкой ToolTip -->
@@ -895,17 +895,38 @@
                     </DataGridTextColumn.Header>
                 </DataGridTextColumn>
 
-                <DataGridTextColumn Width="auto" Binding="{Binding Unit}">
-                    <DataGridTextColumn.Header>
-                        <TextBlock Text="Ед. измерения" ToolTip="Единица измерения товара (кг, шт, л и т.д.)"/>
-                    </DataGridTextColumn.Header>
-                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="Ед. измерения" Width="auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding UnitName}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding DataContext.Units, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                              SelectedItem="{Binding SelectedUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      DisplayMemberPath="ShortName"
+                              IsEditable="False"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Width="auto" Binding="{Binding OKEICode}">
-                    <DataGridTextColumn.Header>
-                        <TextBlock Text="Код по ОКЕИ" ToolTip="Код единицы измерения по Общероссийскому классификатору"/>
-                    </DataGridTextColumn.Header>
-                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="Код ОКЕИ" Width="auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding UnitCode}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding DataContext.Units, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                              SelectedValue="{Binding UnitCode, Mode=TwoWay}"
+                              SelectedValuePath="Code"
+                              DisplayMemberPath="Code"
+                              IsEditable="False"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
 
                 <DataGridTextColumn Width="auto" Binding="{Binding Weight}">
                     <DataGridTextColumn.Header>
@@ -967,11 +988,11 @@
                     <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="HandedOverPosition" Width="auto"
                                   Tag="Должность"  ToolTip="Должность сдающего лица" Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.HandedOverPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding HandedOverPositions}" IsEditable="True" Loaded="HandedOverPosition_Loaded" SelectionChanged="HandedOverPosition_SelectionChanged"/>
+                                  ItemsSource="{Binding HandedOverPositions}" IsEditable="True" Loaded="HandedOverPosition_Loaded" SelectionChanged="HandedOverPosition_SelectionChanged" TabIndex="8"/>
                     <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="2" Name="HandedOverName" Width="auto"
                                   Tag="ФИО" ToolTip="ФИО сдающего лица" Margin="0,0,5,0" Height="35" 
                                   Text="{Binding DocumentData.HandedOverName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding HandedOverNames}" IsEditable="True" Loaded="HandedOverName_Loaded" SelectionChanged="HandedOverName_SelectionChanged"/>
+                                  ItemsSource="{Binding HandedOverNames}" IsEditable="True" Loaded="HandedOverName_Loaded" SelectionChanged="HandedOverName_SelectionChanged" TabIndex="9"/>
                 </Grid>
             </StackPanel>
 
@@ -987,11 +1008,11 @@
                     <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="AcceptedPosition" Width="auto"
                                   Tag="Должность" ToolTip="Должность принимающего лица" Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.AcceptedPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding AcceptedPositions}" IsEditable="True" Loaded="AcceptedPosition_Loaded" SelectionChanged="AcceptedPosition_SelectionChanged"/>
+                                  ItemsSource="{Binding AcceptedPositions}" IsEditable="True" Loaded="AcceptedPosition_Loaded" SelectionChanged="AcceptedPosition_SelectionChanged" TabIndex="10"/>
                     <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="2" Name="AcceptedName"  Width="auto"
                                   Tag="ФИО" ToolTip="ФИО принимающего лица"  Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.AcceptedName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding AcceptedNames}" IsEditable="True" Loaded="AcceptedName_Loaded" SelectionChanged="AcceptedName_SelectionChanged"/>
+                                  ItemsSource="{Binding AcceptedNames}" IsEditable="True" Loaded="AcceptedName_Loaded" SelectionChanged="AcceptedName_SelectionChanged" TabIndex="11"/>
                 </Grid>
             </StackPanel>
 
@@ -1007,14 +1028,14 @@
                     <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="0" Name="AdminPosition" Width="auto"
                                   Tag="Должность" ToolTip="Должность предcn. администр." Margin="0,0,5,0" Height="35"
                                   Text="{Binding DocumentData.AdminPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding AdminPositions}" IsEditable="True" Loaded="AdminPosition_Loaded" SelectionChanged="AdminPosition_SelectionChanged"/>
+                                  ItemsSource="{Binding AdminPositions}" IsEditable="True" Loaded="AdminPosition_Loaded" SelectionChanged="AdminPosition_SelectionChanged" TabIndex="12"/>
                     <ComboBox Style="{StaticResource ModernComboBoxStyle}" Grid.Column="1" Name="AdminName" Width="auto"
                                   Tag="ФИО" ToolTip="ФИО предст. администр." HorizontalContentAlignment="Stretch" Height="35" Margin="0,0,5,0"
                                   Text="{Binding DocumentData.AdminName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  ItemsSource="{Binding AdminNames}" IsEditable="True" Loaded="AdminName_Loaded" SelectionChanged="AdminName_SelectionChanged"/>
+                                  ItemsSource="{Binding AdminNames}" IsEditable="True" Loaded="AdminName_Loaded" SelectionChanged="AdminName_SelectionChanged" TabIndex="13"/>
                 </Grid>
             </StackPanel>
         </Grid>
-        <Button Style="{StaticResource ModernButtonStyle}" Command="{StaticResource ExportCommand}" Content="Экспорт" HorizontalAlignment="Right" VerticalAlignment="Center" Width="115" ToolTip="Выполниить экспорт в Exсel документ" Height="36" Margin="0,0,5,0" Grid.Row="9" Click="ExportButton_Click"/>
+        <Button Style="{StaticResource ModernButtonStyle}" Command="{StaticResource ExportCommand}" Content="Экспорт" HorizontalAlignment="Right" VerticalAlignment="Center" Width="115" ToolTip="Выполниить экспорт в Exсel документ" Height="36" Margin="0,0,5,0" Grid.Row="9" Click="ExportButton_Click" TabIndex="14"/>
     </Grid>
 </Window>

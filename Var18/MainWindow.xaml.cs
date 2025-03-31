@@ -28,8 +28,8 @@ namespace Var18
             InitializeComponent();
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
-            _viewModel.LoadDataFromTemplate(); 
-            
+            _viewModel.LoadDataFromTemplate();
+
 
             InitializeTestData();
 
@@ -39,9 +39,9 @@ namespace Var18
 
 
             GoodsGrid.ItemsSource = _viewModel.GoodsItems;
-        
 
-    }
+
+        }
         private void InitializeTestData()
         {
             _viewModel.DocumentData.HandedOverPosition = _viewModel.HandedOverPositions[0];
@@ -301,7 +301,7 @@ namespace Var18
             var index = _viewModel.AdminNames.IndexOf(AdminName.Text);
             if (index != -1)
                 AdminPosition.SelectedIndex = AdminName.SelectedIndex;
-            
+
         }
 
         private void AdminPosition_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -345,7 +345,85 @@ namespace Var18
             if (index != -1)
                 HandedOverName.SelectedIndex = HandedOverPosition.SelectedIndex;
         }
+
+        private void GoodsGrid_CurrentCellChanged(object sender, EventArgs e)
+        {
+            if (GoodsGrid.CurrentColumn?.DisplayIndex == 7)
+            {
+                decimal goodsTotalQuantity = 0;
+                decimal goodsTotalWeight = 0;
+                decimal goodsTotalSum = 0;
+                decimal containerTotalQuantity = 0;
+                decimal containerTotalWeight = 0;
+                decimal containerTotalSum = 0;
+                string currentSection = "Товары";
+                foreach (var item in _viewModel.GoodsItems)
+                {
+
+
+                    decimal sum = item.Price * item.Quantity;
+                    if (item.Name == "Тара")
+                    {
+                        currentSection = "Тара";
+                        sum = 0;
+                    }
+
+                    if (currentSection == "Товары")
+                    {
+
+                        if (item.Name != "Итого" && item.Name != "Всего по акту")
+                        {
+                            goodsTotalQuantity += item.Quantity;
+                            goodsTotalWeight += item.Weight;
+                            goodsTotalSum += sum;
+                            item.Amount = item.Price * item.Quantity;
+                        }
+
+                        else if (item.Name == "Итого")
+                        {
+                            item.Quantity = goodsTotalQuantity;
+                            item.Weight = goodsTotalWeight;
+                            item.Price = 0;
+                            item.Amount = goodsTotalSum;
+                                            
+                        }
+                    }
+                    else 
+                    {
+                        if (item.Name != "Итого" && item.Name != "Всего по акту")
+                        {
+                            containerTotalQuantity += item.Quantity;
+                            containerTotalWeight += item.Weight;
+                            containerTotalSum += sum;
+                            item.Amount = item.Price * item.Quantity;
+                        }
+                        else if (item.Name == "Итого")
+                        {
+                            item.Quantity = containerTotalQuantity;
+                            item.Weight = containerTotalWeight;
+                            item.Price = 0;
+                            item.Amount = containerTotalSum;
+                        }
+                    }
+
+                    if (item.Name == "Всего по акту")
+                    {
+                        item.Quantity = 0;
+                        item.Weight = 0;
+                        item.Price = 0;
+                        item.Amount = goodsTotalSum + containerTotalSum;
+
+                    }
+
+                }
+
+
+            }
+        }
+
+        private void GoodsGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            GoodsGrid.ItemsSource = _viewModel.GoodsItems;
+        }
     }
-
-
 }

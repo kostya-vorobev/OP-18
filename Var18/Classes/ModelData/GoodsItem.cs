@@ -8,6 +8,13 @@ using System.Threading.Tasks;
 
 namespace Var18.Classes.ModelData
 {
+    public class UnitInfo
+    {
+        public string Code { get; set; }  // Код ОКЕИ
+        public string Name { get; set; }  // Наименование единицы
+        public string ShortName { get; set; }  // Краткое наименование
+    }
+
     public class GoodsItem : INotifyPropertyChanged
     {
         private int _number;
@@ -63,11 +70,8 @@ namespace Var18.Classes.ModelData
             get => _unit;
             set
             {
-                if (_unit != value)
-                {
-                    _unit = value;
-                    OnPropertyChanged();
-                }
+                _unit = value;
+                OnPropertyChanged();
             }
         }
 
@@ -124,10 +128,42 @@ namespace Var18.Classes.ModelData
                 }
             }
         }
+        //public decimal Amount => Quantity * Price;
 
-        public decimal Amount => Quantity * Price;
+        // Изменяемое свойство Amount
+        private decimal _amount;
+        public decimal Amount
+        {
+            get => _amount;
+            set
+            {
+                _amount = value;
+                OnPropertyChanged();
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private UnitInfo _selectedUnit;
+
+        public UnitInfo SelectedUnit
+        {
+            get => _selectedUnit;
+            set
+            {
+                _selectedUnit = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(UnitCode)); // Обновляем код при изменении единицы
+                OnPropertyChanged(nameof(UnitName)); // Обновляем название
+            }
+        }
+
+        // Код ОКЕИ (только для чтения)
+        public string UnitCode => SelectedUnit?.Code;
+
+        // Название единицы (только для чтения)
+        public string UnitName => SelectedUnit?.ShortName;
+
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -145,7 +181,8 @@ namespace Var18.Classes.ModelData
                 OKEICode = this.OKEICode,
                 Weight = this.Weight,
                 Quantity = this.Quantity,
-                Price = this.Price
+                Price = this.Price,
+                Amount = this.Amount
             };
         }
 
