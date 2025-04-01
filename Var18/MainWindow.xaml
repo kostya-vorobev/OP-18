@@ -904,7 +904,7 @@
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
                             <ComboBox ItemsSource="{Binding DataContext.Units, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                              SelectedItem="{Binding SelectedUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              SelectedItem="{Binding SelectedUnit, UpdateSourceTrigger=PropertyChanged}"
                                       DisplayMemberPath="ShortName"
                               IsEditable="False"/>
                         </DataTemplate>
@@ -917,15 +917,6 @@
                             <TextBlock Text="{Binding UnitCode}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
-                    <DataGridTemplateColumn.CellEditingTemplate>
-                        <DataTemplate>
-                            <ComboBox ItemsSource="{Binding DataContext.Units, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                              SelectedValue="{Binding UnitCode, Mode=TwoWay}"
-                              SelectedValuePath="Code"
-                              DisplayMemberPath="Code"
-                              IsEditable="False"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
 
                 <DataGridTextColumn Width="auto" Binding="{Binding Weight}">
